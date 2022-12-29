@@ -37,6 +37,7 @@ async function run() {
   try {
     const usersCollection = client.db("dailyTask").collection("users");
     const tasksCollection = client.db("dailyTask").collection("myTasks");
+    const commentCollection = client.db("dailyTask").collection("myComment");
 
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
@@ -92,6 +93,26 @@ async function run() {
       );
       res.send(result);
     });
+    app.put("/updateTask", async (req, res) => {
+      const id = req.query.id;
+      console.log(id);
+      const updatedData = req.body;
+      console.log(updatedData);
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: updatedData.name,
+          description: updatedData.description,
+        },
+      };
+      const result = await tasksCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
 
     app.delete("/task/:id", async (req, res) => {
       const id = req.params.id;
@@ -127,6 +148,13 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const result = await tasksCollection.deleteOne(filter);
+      res.send(result);
+    });
+
+    // comment
+    app.post("/comment", async (req, res) => {
+      const task = req.body;
+      const result = await commentCollection.insertOne(task);
       res.send(result);
     });
   } finally {
